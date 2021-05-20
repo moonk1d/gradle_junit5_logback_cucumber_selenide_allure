@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'io.qameta.allure' version '2.8.1'
+}
+
+group 'automation.poc'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+def junit5Version = '5.7.0'
+def slf4jVersion = '1.7.30'
+def selenideVersion = '5.20.1'
+def allureVersion = '2.13.9'
+def cucumberVersion = '6.8.1'
+def logbackVersion = '1.2.3'
+
+dependencies {
+    implementation "org.slf4j:slf4j-api:${slf4jVersion}"
+    implementation "com.codeborne:selenide:${selenideVersion}"
+    implementation "ch.qos.logback:logback-core:${logbackVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
+    implementation "io.qameta.allure:allure-selenide:${allureVersion}"
+    implementation "io.qameta.allure:allure-cucumber6-jvm:${allureVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junit5Version}"
+    testImplementation "io.cucumber:cucumber-java8:${cucumberVersion}"
+    testImplementation "io.cucumber:cucumber-junit:${cucumberVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junit5Version}"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junit5Version}"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Test run configuration for Cucumber and jUnit4
+// $ gradlew clean cucumber -Denv=test -Dbrowser=firefox --tests tests.grinfer.* -i
+task cucumber(type: Test) {
+// this is required to read properties that are passed, like:
+// -Denv=test or -Dbrowser=firefox
+    systemProperty("env", System.getProperty('env'))
+    systemProperty("browser", System.getProperty('browser'))
+    useJUnit()
+}
+
+cucumber.finalizedBy 'allureReport'
+
+allure {
+    version = allureVersion
+    autoconfigure = false
+    aspectjweaver = true
+}
